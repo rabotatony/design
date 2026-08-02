@@ -1,0 +1,57 @@
+{
+  "ai_images": 10,
+  "human_images": 10,
+  "accuracy": 0.95,
+  "threshold_used": 0.5,
+  "optimal_threshold": 0.5,
+  "false_positives": [],
+  "false_negatives": [
+    {
+      "file": "ai_10.png",
+      "score": 0.4,
+      "verdict": "uncertain"
+    }
+  ],
+  "per_detector_accuracy": {
+    "frequency_ceiling": {
+      "ai_mean": 0.39,
+      "human_mean": 0.27,
+      "separation": 0.13
+    },
+    "noise_pattern": {
+      "ai_mean": 0.94,
+      "human_mean": 0.95,
+      "separation": -0.01
+    },
+    "palette": {
+      "ai_mean": 0.76,
+      "human_mean": 0.1,
+      "separation": 0.66
+    },
+    "composition": {
+      "ai_mean": 1.0,
+      "human_mean": 0.89,
+      "separation": 0.11
+    },
+    "texture_uniformity": {
+      "ai_mean": 0.52,
+      "human_mean": 0.0,
+      "separation": 0.52
+    },
+    "metadata": {
+      "ai_mean": 0.5,
+      "human_mean": 0.35,
+      "separation": 0.15
+    }
+  },
+  "suggested_weights": {
+    "frequency_ceiling": 0.08,
+    "noise_pattern": 0.0,
+    "palette": 0.42,
+    "composition": 0.07,
+    "texture_uniformity": 0.33,
+    "metadata": 0.1
+  },
+  "weakest_detector": "noise_pattern",
+  "strongest_detector": "palette"
+}

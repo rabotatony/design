@@ -1,0 +1,13 @@
+node_modules/
+.next/
+__pycache__/
+.pytest_cache/
+*.pyc
+dev.log
+.zscripts/dev-output.log
+test_data/real/
+test_data/ai/
+test_data/mock_project/
+db/
+upload/
+skills/

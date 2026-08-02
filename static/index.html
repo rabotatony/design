@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Image Detector</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #0a0a0a; color: #e5e5e5; min-height: 100vh; padding: 20px; }
+.container { max-width: 800px; margin: 0 auto; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+header h1 { font-size: 1.4rem; font-weight: 600; }
+header a { color: #888; text-decoration: none; font-size: 0.85rem; }
+header a:hover { color: #3b82f6; }
+.drop-zone { border: 2px dashed #333; border-radius: 12px; padding: 48px 20px; text-align: center; color: #888; cursor: pointer; transition: all 0.2s; background: #1a1a1a; }
+.drop-zone:hover, .drop-zone.dragover { border-color: #3b82f6; color: #3b82f6; }
+.drop-zone p { font-size: 0.95rem; }
+.results { margin-top: 24px; }
+.batch-actions { margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; }
+.card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 16px; margin-bottom: 12px; transition: 0.2s; }
+.card-row { display: flex; align-items: center; gap: 14px; }
+.thumb { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+.info { flex: 1; min-width: 0; }
+.filename { font-size: 0.9rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.score-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.bar { flex: 1; height: 8px; background: #2a2a2a; border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+.score-num { font-size: 0.85rem; font-weight: 600; min-width: 36px; text-align: right; }
+.verdict { font-size: 0.75rem; color: #888; margin-top: 4px; }
+.actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.btn { padding: 6px 14px; border-radius: 8px; border: none; font-size: 0.8rem; cursor: pointer; transition: 0.2s; font-family: inherit; }
+.btn-primary { background: #3b82f6; color: #fff; }
+.btn-primary:hover { background: #2563eb; }
+.btn-secondary { background: #2a2a2a; color: #e5e5e5; }
+.btn-secondary:hover { background: #333; }
+.btn:disabled { opacity: 0.5; cursor: wait; }
+.btn-large { padding: 10px 20px; font-size: 0.85rem; }
+.details { margin-top: 12px; padding-top: 12px; border-top: 1px solid #2a2a2a; display: none; }
+.details.open { display: block; }
+.det-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.8rem; }
+.det-name { width: 140px; color: #888; }
+.det-bar { flex: 1; height: 6px; background: #2a2a2a; border-radius: 3px; overflow: hidden; }
+.det-fill { height: 100%; border-radius: 3px; }
+.det-score { width: 32px; text-align: right; font-weight: 600; }
+.det-detail { font-size: 0.7rem; color: #666; margin-left: 150px; margin-top: -4px; margin-bottom: 6px; }
+.compare { display: flex; gap: 16px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #2a2a2a; }
+.compare-item { flex: 1; text-align: center; }
+.compare-item img { width: 100%; max-width: 200px; border-radius: 8px; }
+.compare-label { font-size: 0.75rem; color: #888; margin-top: 4px; }
+.improvement { color: #22c55e; font-weight: 600; font-size: 0.85rem; margin-top: 4px; }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #444; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.toast { position: fixed; bottom: 20px; right: 20px; background: #ef4444; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 0.85rem; z-index: 100; opacity: 0; transition: 0.3s; }
+.toast.show { opacity: 1; }
+.green { background: #22c55e; }
+.yellow { background: #eab308; }
+.red { background: #ef4444; }
+@media (max-width: 600px) { .compare { flex-direction: column; } .card-row { flex-wrap: wrap; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>AI Image Detector</h1>
+    <a href="https://github.com/rabotatony/design" target="_blank">GitHub</a>
+  </header>
+  <div class="drop-zone" id="dropZone">
+    <p>Drop images here or click to browse</p>
+    <p style="font-size:0.75rem;margin-top:6px">(single or multiple)</p>
+  </div>
+  <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+  <div class="results" id="results"></div>
+  <div class="batch-actions" id="batchActions" style="display:none">
+    <button class="btn btn-primary btn-large" id="fixAllBtn">Fix All AI Images</button>
+    <button class="btn btn-secondary btn-large" id="downloadAllBtn">Download All Fixed (ZIP)</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const $ = id => document.getElementById(id);
+const results = [];
+let fileMap = {};
+
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+function scoreColor(s) { return s < 0.4 ? 'green' : s < 0.6 ? 'yellow' : 'red'; }
+
+async function uploadFiles(files) {
+  if (!files.length) return;
+  const fd = new FormData();
+  for (const f of files) fd.append('files', f);
+  const dz = $('dropZone');
+  dz.innerHTML = '<p><span class="spinner"></span> Analyzing...</p>';
+  try {
+    const res = await fetch('/api/batch', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    for (const r of data) { results.push(r); fileMap[r.file] = files.find(f => f.name === r.file); }
+    render();
+  } catch (e) { toast('Upload failed: ' + e.message); }
+  dz.innerHTML = '<p>Drop images here or click to browse</p><p style="font-size:0.75rem;margin-top:6px">(single or multiple)</p>';
+}
+
+function render() {
+  const c = $('results');
+  results.sort((a, b) => (b.total_score || 0) - (a.total_score || 0));
+  c.innerHTML = results.map((r, i) => {
+    const sc = r.total_score || 0;
+    const col = scoreColor(sc);
+    const hasFix = r.fixedImage !== undefined;
+    let html = `<div class="card" id="card-${i}">
+      <div class="card-row">
+        <img class="thumb" src="${r.thumb || ''}" alt="">
+        <div class="info">
+          <div class="filename">${r.file}</div>
+          <div class="score-row">
+            <div class="bar"><div class="bar-fill ${col}" style="width:${sc*100}%"></div></div>
+            <div class="score-num">${sc.toFixed(2)}</div>
+          </div>
+          <div class="verdict">${r.verdict || 'error'}${r.error ? ': ' + r.error : ''}</div>
+        </div>
+      </div>
+      <div class="actions">
+        ${sc >= 0.4 ? `<button class="btn btn-primary" onclick="fixOne(${i})" id="fixbtn-${i}">Fix</button>` : ''}
+        <button class="btn btn-secondary" onclick="toggleDetails(${i})">Details</button>
+        ${hasFix ? `<button class="btn btn-secondary" onclick="downloadFixed(${i})">Download</button>` : ''}
+      </div>
+      <div class="details" id="det-${i}">${renderDetails(r)}</div>
+      ${hasFix ? renderCompare(r) : ''}
+    </div>`;
+    return html;
+  }).join('');
+  const aiCount = results.filter(r => (r.total_score || 0) >= 0.6).length;
+  $('batchActions').style.display = results.length ? 'flex' : 'none';
+  $('fixAllBtn').textContent = aiCount ? `Fix All AI Images (${aiCount})` : 'Fix All AI Images';
+}
+
+function renderDetails(r) {
+  if (!r.detectors) return '<div class="det-row">No detector data</div>';
+  return Object.entries(r.detectors).map(([k, v]) => {
+    const col = scoreColor(v.score);
+    const hi = v.score > 0.5 ? 'color:#ef4444' : '';
+    return `<div class="det-row"><div class="det-name">${k}</div>
+      <div class="det-bar"><div class="det-fill ${col}" style="width:${v.score*100}%"></div></div>
+      <div class="det-score" style="${hi}">${v.score.toFixed(2)}</div></div>
+      <div class="det-detail">${v.detail}</div>`;
+  }).join('');
+}
+
+function renderCompare(r) {
+  return `<div class="compare">
+    <div class="compare-item"><img src="${r.thumb}"><div class="compare-label">Before (${r.total_score.toFixed(2)})</div></div>
+    <div class="compare-item"><img src="data:image/png;base64,${r.fixedImage}"><div class="compare-label">After (${r.afterScore.toFixed(2)})</div></div>
+    <div class="improvement">+${r.improvement.toFixed(2)}</div>
+  </div>`;
+}
+
+function toggleDetails(i) { $('det-' + i).classList.toggle('open'); }
+
+async function fixOne(i) {
+  const r = results[i];
+  const btn = $('fixbtn-' + i);
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Fixing...';
+  const file = fileMap[r.file];
+  if (!file) { toast('Original file not found'); btn.disabled = false; btn.textContent = 'Fix'; return; }
+  const fd = new FormData(); fd.append('file', file);
+  try {
+    const res = await fetch('/api/fix', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error(await res.text());
+    const d = await res.json();
+    r.fixedImage = d.image_base64;
+    r.afterScore = d.diagnosis_after.total_score;
+    r.improvement = d.improvement;
+    render();
+  } catch (e) { toast('Fix failed: ' + e.message); btn.disabled = false; btn.textContent = 'Fix'; }
+}
+
+function downloadFixed(i) {
+  const r = results[i];
+  if (!r.fixedImage) return;
+  const a = document.createElement('a');
+  a.href = 'data:image/png;base64,' + r.fixedImage;
+  a.download = 'fixed_' + r.file;
+  a.click();
+}
+
+async function fixAll() {
+  const ai = results.filter(r => (r.total_score || 0) >= 0.6 && !r.fixedImage);
+  if (!ai.length) { toast('No AI images to fix'); return; }
+  let done = 0;
+  for (const r of ai) {
+    const idx = results.indexOf(r);
+    await fixOne(idx);
+    done++;
+    $('fixAllBtn').textContent = `Fixing ${done}/${ai.length}...`;
+  }
+  render();
+}
+
+async function downloadAll() {
+  const toFix = results.filter(r => (r.total_score || 0) >= 0.4);
+  if (!toFix.length) { toast('No images to fix'); return; }
+  const fd = new FormData();
+  for (const r of toFix) { const f = fileMap[r.file]; if (f) fd.append('files', f); }
+  $('downloadAllBtn').innerHTML = '<span class="spinner"></span> Zipping...';
+  try {
+    const res = await fetch('/api/batch/fix', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error(await res.text());
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'fixed_images.zip';
+    a.click();
+    const summary = JSON.parse(res.headers.get('X-Summary'));
+    toast(`Fixed ${summary.fixed}/${summary.total}, skipped ${summary.skipped}`);
+  } catch (e) { toast('Download failed: ' + e.message); }
+  $('downloadAllBtn').textContent = 'Download All Fixed (ZIP)';
+}
+
+const dz = $('dropZone');
+dz.addEventListener('click', () => $('fileInput').click());
+$('fileInput').addEventListener('change', e => uploadFiles([...e.target.files]));
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); uploadFiles([...e.dataTransfer.files]); });
+document.addEventListener('paste', e => {
+  const files = [...e.clipboardData.items].filter(i => i.type.startsWith('image/')).map(i => i.getAsFile());
+  if (files.length) uploadFiles(files);
+});
+$('fixAllBtn').addEventListener('click', fixAll);
+$('downloadAllBtn').addEventListener('click', downloadAll);
+
+window.fixOne = fixOne;
+window.toggleDetails = toggleDetails;
+window.downloadFixed = downloadFixed;
+</script>
+</body>
+</html>

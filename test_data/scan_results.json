@@ -1,0 +1,85 @@
+{
+  "directory": "test_data/mock_project",
+  "total_images": 8,
+  "ai_likely": 4,
+  "uncertain": 1,
+  "human_likely": 3,
+  "fixed": 5,
+  "errors": [
+    "broken.png: cannot identify image file 'test_data/mock_project/broken.png'"
+  ],
+  "results": [
+    {
+      "file": "ai_01.png",
+      "score": 0.78,
+      "verdict": "ai_likely",
+      "fixed": true,
+      "output": "ai_01_fixed.png",
+      "improvement": 0.22,
+      "metadata_detail": "No EXIF data"
+    },
+    {
+      "file": "ai_03.png",
+      "score": 0.74,
+      "verdict": "ai_likely",
+      "fixed": true,
+      "output": "ai_03_fixed.png",
+      "improvement": 0.2,
+      "metadata_detail": "No EXIF data"
+    },
+    {
+      "file": "ai_02.png",
+      "score": 0.66,
+      "verdict": "ai_likely",
+      "fixed": true,
+      "output": "ai_02_fixed.png",
+      "improvement": 0.24,
+      "metadata_detail": "No EXIF data"
+    },
+    {
+      "file": "assets/ai_05.png",
+      "score": 0.65,
+      "verdict": "ai_likely",
+      "fixed": true,
+      "output": "assets/ai_05_fixed.png",
+      "improvement": 0.07,
+      "metadata_detail": "No EXIF data"
+    },
+    {
+      "file": "assets/ai_04.png",
+      "score": 0.58,
+      "verdict": "uncertain",
+      "fixed": true,
+      "output": "assets/ai_04_fixed.png",
+      "improvement": 0.09,
+      "metadata_detail": "No EXIF data"
+    },
+    {
+      "file": "real_03.jpg",
+      "score": 0.38,
+      "verdict": "human_likely",
+      "fixed": false,
+      "output": null,
+      "improvement": null,
+      "metadata_detail": "EXIF present but no camera identification"
+    },
+    {
+      "file": "real_01.jpg",
+      "score": 0.28,
+      "verdict": "human_likely",
+      "fixed": false,
+      "output": null,
+      "improvement": null,
+      "metadata_detail": "EXIF present but no camera identification"
+    },
+    {
+      "file": "real_02.jpg",
+      "score": 0.26,
+      "verdict": "human_likely",
+      "fixed": false,
+      "output": null,
+      "improvement": null,
+      "metadata_detail": "EXIF present but no camera identification"
+    }
+  ]
+}
