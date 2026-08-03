@@ -168,7 +168,7 @@ export default function PipelinePage() {
         <div>
           {!result && (
             <div className="h-full min-h-[400px] border border-dashed border-border rounded-lg flex items-center justify-center text-sm text-muted-foreground">
-              {running ? "Running 4 steps: concept → design → validation → components..." : "Run the pipeline to see the result"}
+              {running ? "Running 5 steps: concept → design → validation → components → page..." : "Run the pipeline to see the result"}
             </div>
           )}
 
