@@ -89,10 +89,12 @@ def run_pipeline(brief, forced_concept=None):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print('usage: pipeline.py \'{"project": "...", "feeling": "..."}\' [--full]')
+        print('usage: pipeline.py \'{"project": "...", "feeling": "..."}\' [concept] [--full]')
         sys.exit(1)
     brief = json.loads(sys.argv[1])
-    result = run_pipeline(brief)
+    rest = [a for a in sys.argv[2:] if a != "--full"]
+    forced = rest[0] if rest else None
+    result = run_pipeline(brief, forced_concept=forced)
     if "--full" not in sys.argv:
         result = {k: v for k, v in result.items() if k not in ("zip_base64", "files")}
     print(json.dumps(result, indent=2))

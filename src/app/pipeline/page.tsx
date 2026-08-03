@@ -10,6 +10,15 @@ interface Step {
   duration_ms: number;
 }
 
+interface Variation {
+  index: number;
+  concept: string;
+  genericity: number;
+  colors: Record<string, string>;
+  display_font: string;
+  tension_rule: string;
+}
+
 interface PipelineResult {
   concept: string;
   steps: Step[];
@@ -37,10 +46,32 @@ export default function PipelinePage() {
   const [toast, setToast] = useState<string | null>(null);
   const [activeFile, setActiveFile] = useState("tokens.css");
   const [showFiles, setShowFiles] = useState(false);
+  const [directions, setDirections] = useState<Variation[] | null>(null);
+  const [chosenConcept, setChosenConcept] = useState<string | null>(null);
+  const [exploring, setExploring] = useState(false);
 
   const showToast = (m: string) => {
     setToast(m);
     setTimeout(() => setToast(null), 4000);
+  };
+
+  const explore = async () => {
+    setExploring(true);
+    try {
+      const res = await fetch("/api/variations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brief, count: 3 }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      setDirections(data.variations);
+      setChosenConcept(null);
+    } catch (err) {
+      showToast(`Variations failed: ${err instanceof Error ? err.message : "error"}`);
+    } finally {
+      setExploring(false);
+    }
   };
 
   const run = async () => {
@@ -52,7 +83,7 @@ export default function PipelinePage() {
       const res = await fetch("/api/pipeline", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brief }),
+        body: JSON.stringify({ brief, concept: chosenConcept ?? undefined }),
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
@@ -130,6 +161,43 @@ export default function PipelinePage() {
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-md py-2.5 text-sm font-medium">
               {running ? "Running pipeline..." : "Run Pipeline"}
             </button>
+          </div>
+
+          <div className="bg-card border border-border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <p className="text-sm font-medium">Design Directions</p>
+                <p className="text-xs text-muted-foreground">3 distinct concepts — pick one or run default</p>
+              </div>
+              <button onClick={explore} disabled={exploring}
+                className="px-3 py-1.5 bg-card border border-border hover:bg-muted disabled:opacity-50 rounded-lg text-xs">
+                {exploring ? "Exploring..." : "Explore"}
+              </button>
+            </div>
+            {chosenConcept && (
+              <p className="text-xs text-green-500 mb-2">Will run with: {chosenConcept}</p>
+            )}
+            {directions && (
+              <div className="space-y-2">
+                {directions.map((v) => (
+                  <button
+                    key={v.concept}
+                    onClick={() => setChosenConcept(chosenConcept === v.concept ? null : v.concept)}
+                    className={`w-full text-left p-3 rounded-lg border transition-colors ${chosenConcept === v.concept ? "border-blue-500 bg-blue-500/10" : "border-border hover:bg-muted"}`}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-medium">{v.concept}</span>
+                      <span className="text-[10px] font-mono text-green-500">genericity {v.genericity}</span>
+                    </div>
+                    <div className="flex gap-1 mb-1.5">
+                      {Object.values(v.colors).map((c, i) => (
+                        <span key={i} className="w-5 h-5 rounded-full border border-border" style={{ background: c }} />
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">{v.display_font} · {v.tension_rule}</p>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {result && (
