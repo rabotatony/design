@@ -128,6 +128,7 @@ export default function DesignPage() {
         <a href="/design" className="text-sm font-bold text-foreground">Generator</a>
         <a href="/redesign" className="text-sm text-muted-foreground hover:text-foreground">Redesign</a>
         <a href="/pipeline" className="text-sm text-muted-foreground hover:text-foreground">Pipeline</a>
+        <a href="/apply" className="text-sm text-muted-foreground hover:text-foreground">Apply</a>
       </nav>
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
         <div className="space-y-4">
