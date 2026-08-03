@@ -7,9 +7,11 @@ import zipfile
 
 from designer import generate_design, extract_concept
 from codegen import generate_all
+from pagegen import generate_page
 
 # pipeline.py — the full automation: brief -> concept -> validated design ->
-# component library -> packaged ZIP. One call, four measured steps.
+# component library -> complete landing page -> packaged ZIP.
+# One call, five measured steps.
 
 
 def _step(n, name, status, detail, started):
@@ -24,7 +26,8 @@ def package_zip(design, files):
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("design.json", json.dumps(design, indent=2))
         for name, content in files.items():
-            zf.writestr("anti-ai-components/" + name, content)
+            path = name if name.startswith("page/") else "anti-ai-components/" + name
+            zf.writestr(path, content)
     return buf.getvalue()
 
 
@@ -52,20 +55,30 @@ def run_pipeline(brief):
     detail = str(codegen_result["file_count"]) + " files, " + str(codegen_result["total_lines"]) + " lines"
     steps.append(_step(3, "Component library", "pass", detail, t0))
 
-    # Step 4: package
+    # Step 4: complete landing page
     t0 = time.time()
-    zb = package_zip(design, codegen_result["files"])
-    size_kb = round(len(zb) / 1024, 1)
-    steps.append(_step(4, "Package", "pass", "ZIP " + str(size_kb) + " KB", t0))
+    page_files = generate_page(design, brief)
+    detail = "landing-page.tsx + content.json, concept copy: " + concept
+    steps.append(_step(4, "Page generation", "pass", detail, t0))
 
+    # Step 5: package
+    t0 = time.time()
+    all_files = {}
+    all_files.update(codegen_result["files"])
+    all_files.update(page_files)
+    zb = package_zip(design, all_files)
+    size_kb = round(len(zb) / 1024, 1)
+    steps.append(_step(5, "Package", "pass", "ZIP " + str(size_kb) + " KB, " + str(len(all_files) + 1) + " entries", t0))
+
+    total_lines = codegen_result["total_lines"] + sum(len(c.splitlines()) for c in page_files.values())
     return {
         "brief": brief,
         "concept": concept,
         "steps": steps,
         "design": design,
-        "files": codegen_result["files"],
-        "file_count": codegen_result["file_count"],
-        "total_lines": codegen_result["total_lines"],
+        "files": all_files,
+        "file_count": len(all_files),
+        "total_lines": total_lines,
         "zip_base64": base64.b64encode(zb).decode("ascii"),
         "all_passed": all(s["status"] == "pass" for s in steps),
         "total_duration_ms": round((time.time() - total_start) * 1000, 1),
