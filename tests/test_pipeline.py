@@ -56,3 +56,11 @@ def test_package_zip_roundtrip():
 def base64_decode(s):
     import base64
     return base64.b64decode(s)
+
+
+def test_pipeline_forced_concept():
+    result = run_pipeline(BRIEF, forced_concept="forge")
+    assert result["concept"] == "forge"
+    assert result["design"]["concept"] == "forge"
+    assert result["all_passed"]
+    assert "(chosen by you)" in result["steps"][0]["detail"]

@@ -5,13 +5,14 @@ import json
 import base64
 import zipfile
 
-from designer import generate_design, extract_concept
+from designer import extract_concept
+from variations import generate_design_for_concept
 from codegen import generate_all
 from pagegen import generate_page
 
 # pipeline.py — the full automation: brief -> concept -> validated design ->
 # component library -> complete landing page -> packaged ZIP.
-# One call, five measured steps.
+# One call, five measured steps. Optional forced_concept for chosen directions.
 
 
 def _step(n, name, status, detail, started):
@@ -31,18 +32,19 @@ def package_zip(design, files):
     return buf.getvalue()
 
 
-def run_pipeline(brief):
+def run_pipeline(brief, forced_concept=None):
     total_start = time.time()
     steps = []
 
-    # Step 1: concept extraction
+    # Step 1: concept extraction (or forced choice from variations)
     t0 = time.time()
-    concept = extract_concept(brief)
-    steps.append(_step(1, "Concept extraction", "pass", "concept: " + concept, t0))
+    concept = forced_concept if forced_concept else extract_concept(brief)
+    detail = "concept: " + concept + (" (chosen by you)" if forced_concept else "")
+    steps.append(_step(1, "Concept extraction", "pass", detail, t0))
 
     # Step 2: design system + anti-AI validation
     t0 = time.time()
-    design = generate_design(brief)
+    design = generate_design_for_concept(brief, concept)
     v = design["anti_ai_validation"]
     passed = v["genericity_score"] < 0.4
     detail = (str(len(design["palette"])) + " colors, genericity "
