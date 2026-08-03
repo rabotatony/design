@@ -29,6 +29,10 @@ export default function DesignPage() {
   const [brief, setBrief] = useState({ project: "fintech dashboard", feeling: "trustworthy but warm", audience: "freelancers" });
   const [constraints, setConstraints] = useState({ darkMode: true, rtl: false, mobile: true });
   const previewRef = useRef<HTMLDivElement>(null);
+  const [codeLoading, setCodeLoading] = useState(false);
+  const [codeData, setCodeData] = useState<{ concept: string; files: Record<string, string>; file_count: number; total_lines: number; zip_base64: string } | null>(null);
+  const [showCode, setShowCode] = useState(false);
+  const [activeFile, setActiveFile] = useState("tokens.css");
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
@@ -53,6 +57,52 @@ export default function DesignPage() {
   const copy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     showToast(`${label} copied to clipboard`);
+  };
+
+  const fetchCode = async () => {
+    const cons = Object.entries(constraints).filter(([_, v]) => v).map(([k]) => k === "darkMode" ? "dark mode" : k === "rtl" ? "hebrew RTL support" : "mobile-first");
+    const res = await fetch("/api/codegen", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ brief: { ...brief, constraints: cons } }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  };
+
+  const getCode = async () => {
+    setCodeLoading(true);
+    try {
+      const data = await fetchCode();
+      setCodeData(data);
+      setActiveFile("tokens.css");
+      setShowCode(true);
+    } catch (err) {
+      showToast(`Codegen failed: ${err instanceof Error ? err.message : "error"}`);
+    } finally {
+      setCodeLoading(false);
+    }
+  };
+
+  const downloadZip = async () => {
+    setCodeLoading(true);
+    try {
+      const data = codeData ?? (await fetchCode());
+      if (!codeData) setCodeData(data);
+      const bytes = atob(data.zip_base64);
+      const buf = new Uint8Array(bytes.length);
+      for (let i = 0; i < bytes.length; i++) buf[i] = bytes.charCodeAt(i);
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([buf], { type: "application/zip" }));
+      a.download = `anti-ai-components-${data.concept}.zip`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast("Component library ZIP downloaded");
+    } catch (err) {
+      showToast(`Download failed: ${err instanceof Error ? err.message : "error"}`);
+    } finally {
+      setCodeLoading(false);
+    }
   };
 
   const p = design?.design.palette || {};
@@ -210,6 +260,42 @@ export default function DesignPage() {
               </div>
               <div className="mt-4 p-3 bg-card border border-border rounded-lg text-xs text-muted-foreground">
                 <strong className="text-foreground">Tension:</strong> {t?.tension_rule}. {r?.tension}. {e?.tension}.
+              </div>
+              <div className="mt-4 p-4 bg-card border border-border rounded-lg">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Export as Component Library</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Ready-to-use React components with this design baked in</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={getCode} disabled={codeLoading}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-xs font-medium">
+                      {codeLoading ? "Generating..." : "View Code"}
+                    </button>
+                    <button onClick={downloadZip} disabled={codeLoading}
+                      className="px-3 py-1.5 bg-card border border-border disabled:opacity-50 rounded-lg text-xs hover:bg-muted">
+                      Download ZIP
+                    </button>
+                  </div>
+                </div>
+                {codeData && showCode && (
+                  <div className="mt-3">
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {Object.keys(codeData.files).map((name) => (
+                        <button key={name} onClick={() => setActiveFile(name)}
+                          className={`px-2 py-1 rounded text-[11px] font-mono ${activeFile === name ? "bg-blue-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+                          {name.split("/").pop()}
+                        </button>
+                      ))}
+                    </div>
+                    <pre className="bg-background border border-border rounded-lg p-3 text-[11px] leading-relaxed overflow-auto max-h-[400px] font-mono">
+                      {codeData.files[activeFile]}
+                    </pre>
+                    <p className="text-[11px] text-muted-foreground mt-2">
+                      {codeData.file_count} files · {codeData.total_lines} lines · concept: {codeData.concept}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
