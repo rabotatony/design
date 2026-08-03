@@ -16,7 +16,8 @@
     "scan:ai:report": "cd ai-detector && python3 detector.py ../public --scan --report ai-report.md",
     "scan:ai:all": "cd ai-detector && bash scan_project.sh",
     "scan:ai:check": "cd ai-detector && bash scan_project.sh || echo \"AI images detected\"",
-    "serve": "cd ai-detector && python3 server.py"
+    "serve": "cd ai-detector && python3 server.py",
+    "redesign": "echo 'Open http://localhost:3000/redesign'"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
