@@ -116,3 +116,39 @@ def run_machine(css, texts, content_sources, code_files, content_collections,
         'coherence_lift': report['stages']['coherence_lift'],
     }
     return report
+
+
+def package_redesign(report):
+    """Package all counter outputs into ONE unified, applicable redesign deliverable,
+    with an honest before/after comparison so the improvement is measurable.
+    This is the end-to-end deliverable a user takes and applies to their project."""
+    deep = report['stages'].get('deep_text', {})
+    pkg = {
+        'css': report.get('lifted_css') or report.get('applied_css'),
+        'css_lifted': 'lifted_css' in report,
+        'text_collections': report.get('deep_fixed_collections', {}),
+        'before_after': {
+            'css_clean': {
+                'before': report['stages']['apply']['before']['clean'],
+                'after': report['stages']['apply']['after']['clean'],
+            },
+            'semantic_per_collection': {
+                name: {'before': deep.get('before', {}).get(name),
+                       'after': deep.get('after', {}).get(name),
+                       'entries_changed': deep.get('changed', {}).get(name, 0)}
+                for name in deep.get('before', {})
+            },
+            'coherence': {
+                'score': report['stages']['coherence']['total_score'],
+                'verdict': report['stages']['coherence']['verdict'],
+                'lift': report['stages'].get('coherence_lift', {}),
+            },
+            'code_avg': report['stages']['code']['avg'],
+        },
+        'usage': {
+            'css': 'Replace your project globals.css with package["css"] (or diff it in).',
+            'text': 'Each package["text_collections"][name] is the de-AI version of that content collection; swap it into your content source.',
+            'review': 'Human review is required before shipping - the machine proposes, you approve.',
+        },
+    }
+    return pkg
