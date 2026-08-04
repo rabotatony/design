@@ -37,6 +37,22 @@ MATERIALS = {
                   "grain": (0.7, 3, 0.04), "light": "moon", "accent": (125, 105, 145)},
     "forge":     {"base": (28, 24, 21), "ink": (232, 205, 165),
                   "grain": (1.2, 3, 0.03), "light": "ember", "accent": (222, 122, 42)},
+    "glass":     {"base": (222, 228, 232), "ink": (28, 34, 40),
+                  "grain": (1.8, 2, 0.008), "light": "moon", "accent": (90, 140, 165)},
+    "velvet":    {"base": (45, 25, 38), "ink": (228, 218, 225),
+                  "grain": (1.3, 3, 0.045), "light": "candle", "accent": (165, 95, 130)},
+    "linen":     {"base": (235, 231, 220), "ink": (52, 46, 38),
+                  "grain": (0.9, 4, 0.03), "light": "day", "accent": (140, 110, 70)},
+    "copper":    {"base": (60, 38, 28), "ink": (235, 215, 190),
+                  "grain": (1.5, 3, 0.02), "light": "ember", "accent": (195, 115, 60)},
+    "marble":    {"base": (228, 227, 225), "ink": (40, 40, 44),
+                  "grain": (1.7, 3, 0.018), "light": "day", "accent": (110, 115, 130)},
+    "moss":      {"base": (60, 72, 55), "ink": (225, 230, 215),
+                  "grain": (1.1, 4, 0.035), "light": "day", "accent": (110, 135, 85)},
+    "sand":      {"base": (226, 214, 188), "ink": (58, 48, 35),
+                  "grain": (1.2, 3, 0.028), "light": "day", "accent": (165, 130, 80)},
+    "rust":      {"base": (68, 42, 32), "ink": (232, 218, 200),
+                  "grain": (1.6, 4, 0.04), "light": "ember", "accent": (185, 100, 55)},
 }
 
 # light source -> shadow tint (principle: shadows are colored by their light)
