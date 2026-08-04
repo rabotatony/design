@@ -25,9 +25,18 @@ try:
     from he_text import tokenize_he as _he_tokenize_full
 except Exception:
     _he_tokenize_full = None
+try:
+    from he_text import tokenize_en as _en_tokenize_full, detect_language as _detect_lang_full
+except Exception:
+    _en_tokenize_full = None
+    _detect_lang_full = None
 
 
 def he_tokens(text):
+    # Multilingual: detect language and route to the right tokenizer.
+    if _detect_lang_full is not None and _en_tokenize_full is not None:
+        if _detect_lang_full(text) == "en":
+            return _en_tokenize_full(text)
     if _he_tokenize_full is not None:
         return _he_tokenize_full(text)
     words = re.findall(r"[\u0590-\u05FF]{2,}", text)
