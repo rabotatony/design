@@ -5,6 +5,7 @@ Outputs a clean-score (0..1, higher = cleaner) + the tells found.
 import re
 import json
 import sys
+import colorsys
 
 FRAMEWORK_DEFAULTS = [
     "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#ec4899", "#f43f5e",
@@ -62,9 +63,38 @@ def scan_css(css):
     if ai_grad:
         tells.append({"id": "color.gradient_generic", "w": 0.9, "evidence": ai_grad[:2]})
 
-    # 9. aurora/rainbow blobs
-    if "aurora" in css_low or css_low.count("radial-gradient") >= 3:
-        tells.append({"id": "color.aurora_bg", "w": 0.85, "evidence": "aurora/multi radial blobs"})
+    # 9. aurora = 3+ LARGE radial blobs of DIFFERING hues.
+    #    Starfields (tiny px dots) and warm glows/vignettes (one hue family) are not aurora.
+    def _blob_colors(g):
+        out = []
+        for hx in re.findall(r"#[0-9a-f]{6}", g):
+            out.append(tuple(int(hx[i:i+2], 16) for i in (0, 2, 4)))
+        for rr in re.findall(r"rgba?\(([^)]+)\)", g):
+            parts = [float(x) for x in re.findall(r"[\d.]+", rr)[:3]]
+            if len(parts) == 3:
+                out.append(tuple(int(p) for p in parts))
+        return out
+    def _hue(rgb):
+        return colorsys.rgb_to_hsv(rgb[0]/255, rgb[1]/255, rgb[2]/255)[0] * 360
+    grads_all = re.findall(r"radial-gradient\s*\((?:[^()]*|\([^()]*\))*\)", css_low, re.S)
+    blob_hues = []
+    for g in grads_all:
+        m = re.match(r"\s*radial-gradient\s*\(\s*(?:circle|ellipse)?\s*(\d+(?:\.\d+)?)(px|%)", g)
+        is_large = (m is None) or (m.group(2) == "%" and float(m.group(1)) > 20)
+        if not is_large:
+            continue
+        cols = _blob_colors(g)
+        if cols:
+            blob_hues.append(_hue(max(cols, key=lambda c: c[0]+c[1]+c[2])))
+    if len(blob_hues) >= 3:
+        spread = 0
+        for i in range(len(blob_hues)):
+            for j in range(i + 1, len(blob_hues)):
+                d = abs(blob_hues[i] - blob_hues[j])
+                spread = max(spread, min(d, 360 - d))
+        if spread > 60 or "aurora" in css_low:
+            tells.append({"id": "color.aurora_bg", "w": 0.85,
+                          "evidence": f"{len(blob_hues)} large blobs, hue spread {spread:.0f}deg"})
 
     # 10. uniform easing on everything
     eases = re.findall(r"transition[^;]*?\b(ease[-\w]*)\b", css_low) + re.findall(r"animation[^;]*?\b(ease[-\w]*)\b", css_low)
