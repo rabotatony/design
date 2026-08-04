@@ -14,6 +14,11 @@ try:
 except Exception:
     _he_domain_terms = None
     _he_tokenize = None
+try:
+    from he_text import domain_terms_auto as _domain_terms_auto, detect_language as _detect_lang
+except Exception:
+    _domain_terms_auto = None
+    _detect_lang = None
 import hashlib
 from collections import Counter
 
@@ -154,18 +159,23 @@ def mine_structure(content_sources):
 
 
 def mine_domain_vocab(texts):
-    """Extract the project's own DOMAIN vocabulary from its Hebrew content.
-    Uses he_text (comprehensive stopwords + affix stripping) when available,
-    so function words don't leak in. Returns the most distinctive domain terms."""
+    """Extract the project's own DOMAIN vocabulary from its content.
+    Multilingual: detects language (he/en/mixed) and routes to the right
+    tokenizer, so function words don't leak in. Returns the most distinctive
+    domain terms + the detected language."""
     full = " ".join(t for t in texts if t)
-    if _he_domain_terms is None or len(full) < 100:
-        return {"terms": [], "confidence": 0.0, "evidence": ["he_text unavailable or insufficient text"]}
-    terms = _he_domain_terms(full, top_n=12, min_count=2)
+    lang = _detect_lang(full) if _detect_lang else "unknown"
+    extractor = _domain_terms_auto or _he_domain_terms
+    if extractor is None or len(full) < 100:
+        return {"terms": [], "confidence": 0.0, "language": lang,
+                "evidence": ["he_text unavailable or insufficient text"]}
+    terms = extractor(full, top_n=12, min_count=2)
     if not terms:
-        return {"terms": [], "confidence": 0.0, "evidence": ["no distinctive domain terms found"]}
+        return {"terms": [], "confidence": 0.0, "language": lang,
+                "evidence": ["no distinctive domain terms found"]}
     conf = min(1.0, 0.3 + 0.05 * len(terms))
-    return {"terms": terms, "confidence": round(conf, 2),
-            "evidence": ["top domain terms: " + ", ".join(terms[:8])]}
+    return {"terms": terms, "confidence": round(conf, 2), "language": lang,
+            "evidence": ["language=%s, top domain terms: %s" % (lang, ", ".join(terms[:8]))]}
 
 
 def mine_project(css, texts, content_sources):
