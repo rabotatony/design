@@ -54,6 +54,23 @@ def run_machine(css, texts, content_sources, code_files, content_collections,
         code_results[name] = code_detector.analyze_code(src, name)
     avg_code = round(sum(r['total_score'] for r in code_results.values()) / max(1, len(code_results)), 3)
     report['stages']['code'] = {'files': {k: v['total_score'] for k, v in code_results.items()}, 'avg': avg_code}
+    # 7b. DEEP TEXT scan (semantic layer)
+    import text_deep
+    deep_results = {}
+    deep_fixed = {}
+    for name, entries in content_collections.items():
+        deep_results[name] = text_deep.analyze_collection_deep(entries)
+        fixed_entries, changed = text_deep.targeted_contrast_reduction(entries)
+        deep_fixed[name] = {
+            'entries': fixed_entries, 'changed': len(changed),
+            'after': text_deep.analyze_collection_deep(fixed_entries)['avg'],
+            'before': deep_results[name]['avg']}
+    report['stages']['deep_text'] = {
+        'before': {k: v['avg'] for k, v in deep_results.items()},
+        'after': {k: v['after'] for k, v in deep_fixed.items()},
+        'changed': {k: v['changed'] for k, v in deep_fixed.items()}}
+    report['deep_fixed_collections'] = {k: v['entries'] for k, v in deep_fixed.items()}
+
     content_results = {}
     for name, entries in content_collections.items():
         content_results[name] = corpus_detector.analyze_corpus(entries)['total_score']
