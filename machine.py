@@ -83,6 +83,29 @@ def run_machine(css, texts, content_sources, code_files, content_collections,
                                       '\n'.join(code_files.values()), css)
     report['stages']['coherence'] = coh
 
+    # 10. COHERENCE LIFT — if the CSS doesn't yet speak the domain, raise coherence.
+    # Fires only when coherence is below threshold; declines honestly otherwise.
+    import coherence_lifter
+    if coh['total_score'] < 0.6:
+        lifted_css, lift_actions, lift_meta = coherence_lifter.lift_css(
+            css, content_for_coherence, dna)
+        if lift_meta.get('lifted'):
+            coh_after = coherence.analyze_coherence(content_for_coherence,
+                                                   '\n'.join(code_files.values()), lifted_css)
+            report['stages']['coherence_lift'] = {
+                'lifted': True,
+                'before': coh['total_score'],
+                'after': coh_after['total_score'],
+                'delta': round(coh_after['total_score'] - coh['total_score'], 2),
+                'aliases': [a['term'] for a in lift_actions]}
+            report['lifted_css'] = lifted_css
+        else:
+            report['stages']['coherence_lift'] = {'lifted': False,
+                                                  'reason': lift_meta.get('reason')}
+    else:
+        report['stages']['coherence_lift'] = {'lifted': False,
+                                              'reason': 'coherence already >= 0.6'}
+
     report['summary'] = {
         'composed_clean': scan_composed['clean_score'],
         'applied_clean': scan_after['clean_score'],
@@ -90,5 +113,6 @@ def run_machine(css, texts, content_sources, code_files, content_collections,
         'content_scores': content_results,
         'coherence': coh['total_score'],
         'coherence_verdict': coh['verdict'],
+        'coherence_lift': report['stages']['coherence_lift'],
     }
     return report
