@@ -60,6 +60,76 @@ def inject_composed_layer(css, composed_tokens, composed_motion):
     return css + "\n".join(block) + "\n", added
 
 
+
+def extract_block(css, selector):
+    m = re.search(re.escape(selector) + r"\s*\{", css)
+    if not m:
+        return {}
+    start = m.end() - 1
+    depth = 0
+    for i in range(start, len(css)):
+        if css[i] == "{":
+            depth += 1
+        elif css[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return dict(re.findall(r"(--[\w-]+)\s*:\s*([^;]+);", css[start+1:i]))
+    return {}
+
+
+def is_grayscale_scaffold(css):
+    css_low = css.lower()
+    main_oklch = re.findall(r"--(?:primary|accent|secondary|background|foreground|muted)\s*:\s*oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)", css_low)
+    if len(main_oklch) >= 4:
+        chromas = [float(c) for _, c, _ in main_oklch]
+        return all(c < 0.02 for c in chromas)
+    return False
+
+
+def build_shadcn_palette(root_vars, dark_vars):
+    def make(v):
+        s0 = v.get("--surface-0")
+        s1 = v.get("--surface-1")
+        s2 = v.get("--surface-2")
+        ink = v.get("--ink")
+        ink_faint = v.get("--ink-faint", ink)
+        accent = v.get("--accent")
+        return {
+            "--background": s0, "--foreground": ink,
+            "--card": s1, "--card-foreground": ink,
+            "--popover": s1, "--popover-foreground": ink,
+            "--primary": accent, "--primary-foreground": s0,
+            "--secondary": s2, "--secondary-foreground": ink,
+            "--muted": s2, "--muted-foreground": ink_faint,
+            "--accent": accent, "--accent-foreground": s0,
+            "--border": ink_faint, "--input": ink_faint, "--ring": accent,
+        }
+    return make(root_vars), make(dark_vars)
+
+
+def replace_block_vars(css, selector, replacements):
+    m = re.search(re.escape(selector) + r"\s*\{", css)
+    if not m:
+        return css
+    start = m.end() - 1
+    depth = 0
+    end = start
+    for i in range(start, len(css)):
+        if css[i] == "{":
+            depth += 1
+        elif css[i] == "}":
+            depth -= 1
+            if depth == 0:
+                end = i
+                break
+    block = css[start+1:end]
+    for var, val in replacements.items():
+        if val is None:
+            continue
+        block = re.sub(rf"({re.escape(var)})\s*:\s*[^;]+;", rf"\1: {val};", block)
+    return css[:start+1] + block + css[end:]
+
+
 def apply_project(existing_css, composed_tokens, composed_motion):
     report = {"changes": []}
     css, removed = remove_tells(existing_css)
@@ -69,6 +139,14 @@ def apply_project(existing_css, composed_tokens, composed_motion):
     css, fixed_card = fix_glass_card(css)
     if fixed_card:
         report["changes"].append(".glass-card: glass -> opaque parchment-sheet material (class name kept)")
+    if is_grayscale_scaffold(css):
+        root_vars = extract_block(composed_tokens, ":root")
+        dark_vars = extract_block(composed_tokens, ".dark")
+        root_pal, dark_pal = build_shadcn_palette(root_vars, dark_vars)
+        css = replace_block_vars(css, ":root", root_pal)
+        css = replace_block_vars(css, ".dark", dark_pal)
+        report["grayscale_replaced"] = True
+        report["changes"].append("replaced grayscale scaffold palette with composed colors (color identity added)")
     css, added = inject_composed_layer(css, composed_tokens, composed_motion)
     report["added_vars"] = added
     if added:
