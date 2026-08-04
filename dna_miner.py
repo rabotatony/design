@@ -8,6 +8,12 @@ needs_human with raw hints, not invented.
 """
 import re
 import json
+
+try:
+    from he_text import domain_terms as _he_domain_terms, tokenize_he as _he_tokenize
+except Exception:
+    _he_domain_terms = None
+    _he_tokenize = None
 import hashlib
 from collections import Counter
 
@@ -145,6 +151,23 @@ def mine_structure(content_sources):
     return {'candidates': candidates, 'schema': schema, 'confidence': round(conf, 2), 'evidence': evidence}
 
 
+
+
+def mine_domain_vocab(texts):
+    """Extract the project's own DOMAIN vocabulary from its Hebrew content.
+    Uses he_text (comprehensive stopwords + affix stripping) when available,
+    so function words don't leak in. Returns the most distinctive domain terms."""
+    full = " ".join(t for t in texts if t)
+    if _he_domain_terms is None or len(full) < 100:
+        return {"terms": [], "confidence": 0.0, "evidence": ["he_text unavailable or insufficient text"]}
+    terms = _he_domain_terms(full, top_n=12, min_count=2)
+    if not terms:
+        return {"terms": [], "confidence": 0.0, "evidence": ["no distinctive domain terms found"]}
+    conf = min(1.0, 0.3 + 0.05 * len(terms))
+    return {"terms": terms, "confidence": round(conf, 2),
+            "evidence": ["top domain terms: " + ", ".join(terms[:8])]}
+
+
 def mine_project(css, texts, content_sources):
     css_f = mine_css(css)
     voice_f = mine_text(texts)
@@ -166,6 +189,10 @@ def mine_project(css, texts, content_sources):
     evidence['palette_logic'] = ['structural colors parsed from CSS']
     dna['voice'] = voice_f['voice']
     confidence['voice'] = voice_f['confidence']
+    vocab_f = mine_domain_vocab(texts)
+    dna['domain_vocab'] = vocab_f['terms']
+    confidence['domain_vocab'] = vocab_f['confidence']
+    evidence['domain_vocab'] = vocab_f['evidence']
     evidence['voice'] = voice_f['evidence']
     if motif_f['candidates']:
         dna['motif'] = 'the %s as organizing principle' % motif_f['candidates'][0]['reading']
