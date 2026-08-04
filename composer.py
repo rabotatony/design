@@ -74,8 +74,16 @@ def _mix(rgb, target, t):
 
 def _detect_materials(dna):
     text = (str(dna.get("material", "")) + " " + str(dna.get("palette_logic", ""))).lower()
-    found = [m for m in MATERIALS if m in text]
-    return found if found else ["stone"]  # neutral fallback, flagged in manifest
+    # order by FIRST MENTION in the text, so the primary material is the one the
+    # brief actually names first (not whichever happens to sit earliest in MATERIALS)
+    found = []
+    for m in MATERIALS:
+        idx = text.find(m)
+        if idx != -1:
+            found.append((idx, m))
+    found.sort()
+    result = [m for _, m in found]
+    return result if result else ["stone"]  # neutral fallback, flagged in manifest
 
 
 def _anchors_from_palette_logic(dna):
