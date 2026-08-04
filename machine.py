@@ -75,10 +75,20 @@ def run_machine(css, texts, content_sources, code_files, content_collections,
     for name, entries in content_collections.items():
         content_results[name] = corpus_detector.analyze_corpus(entries)['total_score']
     report['stages']['content'] = content_results
+    # 9. COHERENCE — the capstone: does the project speak with one voice?
+    import coherence
+    content_for_coherence = '\n'.join(' '.join(e) if isinstance(e, list) else str(e)
+                                       for e in content_collections.values())
+    coh = coherence.analyze_coherence(content_for_coherence,
+                                      '\n'.join(code_files.values()), css)
+    report['stages']['coherence'] = coh
+
     report['summary'] = {
         'composed_clean': scan_composed['clean_score'],
         'applied_clean': scan_after['clean_score'],
         'code_avg': avg_code,
         'content_scores': content_results,
+        'coherence': coh['total_score'],
+        'coherence_verdict': coh['verdict'],
     }
     return report
