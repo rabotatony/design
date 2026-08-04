@@ -101,6 +101,15 @@ def scan_css(css):
     if len(eases) >= 3 and len(set(eases)) == 1:
         tells.append({"id": "motion.uniform_easing", "w": 0.6, "evidence": sorted(set(eases))})
 
+
+    # 11. grayscale/monochrome scaffold (no color identity = default neutral theme)
+    main_oklch = re.findall(r"--(?:primary|accent|secondary|background|foreground|muted)\s*:\s*oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)", css_low)
+    if len(main_oklch) >= 4:
+        main_chromas = [float(c) for _, c, _ in main_oklch]
+        if all(c < 0.02 for c in main_chromas):
+            tells.append({"id": "color.grayscale_only", "w": 0.85,
+                          "evidence": "main palette has ~0 chroma (monochrome scaffold, no color identity)"})
+
     # clean score: 1 - weighted tell mass (capped)
     mass = sum(t["w"] for t in tells)
     clean = max(0.0, round(1 - mass / 4.0, 3))
