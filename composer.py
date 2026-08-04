@@ -20,21 +20,23 @@ import hashlib
 # ── Material knowledge base: physical substance -> measurable values ────────
 MATERIALS = {
     "parchment": {"base": (232, 223, 200), "ink": (26, 22, 18),
-                  "grain": (0.8, 3, 0.025), "light": "candle"},
+                  "grain": (0.8, 3, 0.025), "light": "candle", "accent": (138, 90, 43)},
     "ink":       {"base": (20, 17, 13), "ink": (236, 227, 208),
-                  "grain": (0.9, 3, 0.035), "light": "candle"},
+                  "grain": (0.9, 3, 0.035), "light": "candle", "accent": (184, 134, 11)},
     "night":     {"base": (16, 18, 28), "ink": (220, 224, 235),
-                  "grain": (1.1, 2, 0.02), "light": "moon"},
+                  "grain": (1.1, 2, 0.02), "light": "moon", "accent": (100, 140, 210)},
     "stone":     {"base": (214, 212, 206), "ink": (35, 34, 32),
-                  "grain": (1.4, 4, 0.03), "light": "day"},
+                  "grain": (1.4, 4, 0.03), "light": "day", "accent": (150, 110, 55)},
     "water":     {"base": (219, 228, 230), "ink": (21, 32, 38),
-                  "grain": (0.5, 2, 0.015), "light": "day"},
+                  "grain": (0.5, 2, 0.015), "light": "day", "accent": (55, 130, 160)},
     "wood":      {"base": (224, 206, 180), "ink": (40, 28, 18),
-                  "grain": (0.35, 4, 0.035), "light": "candle"},
+                  "grain": (0.35, 4, 0.035), "light": "candle", "accent": (165, 105, 45)},
     "metal":     {"base": (210, 212, 216), "ink": (24, 26, 30),
-                  "grain": (1.6, 2, 0.012), "light": "day"},
+                  "grain": (1.6, 2, 0.012), "light": "day", "accent": (200, 110, 40)},
     "smoke":     {"base": (30, 30, 33), "ink": (210, 208, 205),
-                  "grain": (0.7, 3, 0.04), "light": "moon"},
+                  "grain": (0.7, 3, 0.04), "light": "moon", "accent": (125, 105, 145)},
+    "forge":     {"base": (28, 24, 21), "ink": (232, 205, 165),
+                  "grain": (1.2, 3, 0.03), "light": "ember", "accent": (222, 122, 42)},
 }
 
 # light source -> shadow tint (principle: shadows are colored by their light)
@@ -42,6 +44,7 @@ LIGHT_TINT = {
     "candle": (90, 60, 20),
     "moon":   (40, 55, 90),
     "day":    (30, 30, 30),
+    "ember":  (120, 55, 15),
 }
 
 
@@ -122,6 +125,9 @@ def compose(dna):
     if len(anchors) > 2:
         T.append(f"  --accent: {anchors[2]};")
         tag("tokens.css", "--accent", "palette_logic", "declared_anchor_3")
+    else:
+        T.append(f"  --accent: {_hex(mat['accent'])};")
+        tag("tokens.css", "--accent", "material", "accent_from_material")
 
     tint = LIGHT_TINT[mat["light"]]
     T.append(f"  --shadow-sheet: 0 1px 2px rgba{tint + (0.10,)}, 0 3px 10px rgba{tint + (0.07,)};")
@@ -166,6 +172,7 @@ def compose(dna):
     T.append(f"  --ink-soft: {_hex(_mix(d_ink, d_base, 0.25))};")
     T.append(f"  --ink-faint: {_hex(_mix(d_ink, d_base, 0.5))};")
     T.append(f"  --grain-opacity: {round(gop * 1.4, 3)};")
+    T.append(f"  --accent: {_hex(_mix(mat['accent'], (255, 255, 255), 0.25))};")
     T.append("}")
     tag("tokens.css", ".dark", "material", "night_mode_from_second_material")
 
