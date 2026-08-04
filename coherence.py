@@ -21,7 +21,15 @@ GENERIC_CODE = {"data","result","results","item","items","temp","tmp","val","val
 GENERIC_HE_BUZZ = re.compile(r"ייחודי|מרגש|חדשני|חוויה מושלמת|הכי טוב|ברמה אחרת|פורץ דרך|מהפכני")
 
 
+try:
+    from he_text import tokenize_he as _he_tokenize_full
+except Exception:
+    _he_tokenize_full = None
+
+
 def he_tokens(text):
+    if _he_tokenize_full is not None:
+        return _he_tokenize_full(text)
     words = re.findall(r"[\u0590-\u05FF]{2,}", text)
     out = []
     for w in words:
