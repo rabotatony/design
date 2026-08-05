@@ -38,7 +38,7 @@ def extract_features(image_path):
     else:
         feats["noise_corr"] = 0.0
     hsv_max = rgb.max(axis=2); hsv_min = rgb.min(axis=2)
-    sat = np.where(hsv_max>0, (hsv_max-hsv_min)/hsv_max, 0)
+    sat = np.divide(hsv_max-hsv_min, hsv_max, out=np.zeros_like(hsv_max), where=hsv_max>0)
     feats["saturation_mean"] = float(sat.mean())
     feats["saturation_std"] = float(sat.std())
     return feats
