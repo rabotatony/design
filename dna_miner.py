@@ -206,10 +206,20 @@ def mine_project(css, texts, content_sources):
     evidence['voice'] = voice_f['evidence']
     if motif_f['candidates']:
         dna['motif'] = 'the %s as organizing principle' % motif_f['candidates'][0]['reading']
+        confidence['motif'] = motif_f['confidence']
+        evidence['motif'] = motif_f['evidence']
     else:
-        dna['motif'] = None
-    confidence['motif'] = motif_f['confidence']
-    evidence['motif'] = motif_f['evidence']
+        # Infer motif from domain_vocab when structure detection fails
+        vocab_f = mine_domain_vocab(texts)
+        if vocab_f['terms']:
+            top_terms = vocab_f['terms'][:3]
+            dna['motif'] = 'the %s as organizing principle' % ', '.join(top_terms)
+            confidence['motif'] = min(0.4, vocab_f['confidence'])
+            evidence['motif'] = ['inferred from domain vocab: ' + ', '.join(top_terms)]
+        else:
+            dna['motif'] = None
+            confidence['motif'] = 0.0
+            evidence['motif'] = ['no motif detected from structure or domain vocab']
     dna['hierarchy_logic'] = css_f['layout']
     confidence['hierarchy_logic'] = 0.5
     evidence['hierarchy_logic'] = ['layout signal from CSS']
