@@ -107,6 +107,18 @@ def _signature_radius(dna):
         return ("999px 4px 999px 4px", "wheel geometry from signature")
     if "flame" in sig or "candle" in sig or "נר" in sig or "להבה" in sig:
         return ("4px 16px 4px 16px", "flame geometry from signature")
+    if "margin" in sig or "gutter" in sig or "שוליים" in sig:
+        return ("2px 12px 2px 12px", "margin geometry from signature")
+    if "arch" in sig or "door" in sig or "קשת" in sig or "דלת" in sig:
+        return ("14px 14px 2px 2px", "arch geometry from signature")
+    if "spiral" in sig or "ספירלה" in sig or "סלסול" in sig:
+        return ("18px 2px 18px 2px", "spiral geometry from signature")
+    if "leaf" in sig or "עלה" in sig or "צמח" in sig:
+        return ("16px 2px 16px 2px", "leaf geometry from signature")
+    if "drop" in sig or "water" in sig or "טיפה" in sig or "מים" in sig:
+        return ("2px 2px 16px 16px", "drop geometry from signature")
+    if "crystal" in sig or "gem" in sig or "גביש" in sig:
+        return ("10px 2px 10px 2px", "crystal geometry from signature")
     return (None, "signature geometry unrecognized — human input needed")
 
 
