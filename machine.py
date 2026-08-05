@@ -116,10 +116,6 @@ def run_machine(css, texts, content_sources, code_files, content_collections,
         'coherence_verdict': coh['verdict'],
         'coherence_lift': report['stages']['coherence_lift'],
     }
-    return report
-
-
-
     # Text de-AI stage: de-AI the content collections.
     if content_collections:
         import text_deep
@@ -132,6 +128,7 @@ def run_machine(css, texts, content_sources, code_files, content_collections,
                           "entries": rep["entries_out"]}
         report['stages']['text_deai'] = deai
 
+    return report
 
 def package_redesign(report):
     """Package all counter outputs into ONE unified, applicable redesign deliverable,
