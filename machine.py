@@ -8,6 +8,7 @@ The machine proposes; humans approve. Every stage reports evidence.
 import json
 import dna_miner
 import composer
+import text_rewriter
 import design_scan
 import apply
 import code_detector
@@ -116,6 +117,20 @@ def run_machine(css, texts, content_sources, code_files, content_collections,
         'coherence_lift': report['stages']['coherence_lift'],
     }
     return report
+
+
+
+    # Text de-AI stage: de-AI the content collections.
+    if content_collections:
+        import text_deep
+        deai = {}
+        for name, entries in content_collections.items():
+            before = text_deep.analyze_collection_deep(entries)
+            de_aid, rep = text_rewriter.de_ai_text_collection(entries)
+            after = text_deep.analyze_collection_deep(de_aid)
+            deai[name] = {"before": before["avg"], "after": after["avg"],
+                          "entries": rep["entries_out"]}
+        report['stages']['text_deai'] = deai
 
 
 def package_redesign(report):
