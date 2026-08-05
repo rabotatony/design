@@ -16,13 +16,15 @@ AI_PALETTES = {
 }
 
 WEIGHTS = {
-    # Recalibrated on real data (real photo vs real AI-generated image):
-    # noise_pattern is the strongest true AI signal; frequency_ceiling and
-    # metadata produced false positives on real photos, so they are down-weighted.
-    "frequency_ceiling": 0.10,
-    "noise_pattern": 0.40,
+    # Recalibrated on a real 6-image sample (2 photoreal AI + 4 real photos):
+    # noise_pattern is the ONLY reliable discriminator (AI 0.65-1.0 vs real ~0.05).
+    # frequency_ceiling + metadata fire on BOTH real and AI (non-discriminative),
+    # so they are dropped. HONEST NOTE: tuned on a small sample; the statistical
+    # approach has a ceiling for photoreal AI — a trained model is the real fix.
+    "frequency_ceiling": 0.00,
+    "noise_pattern": 0.60,
     "palette": 0.20,
-    "composition": 0.20,
+    "composition": 0.10,
     "texture_uniformity": 0.10,
     "metadata": 0.00,
 }
