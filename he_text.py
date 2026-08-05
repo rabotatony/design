@@ -73,12 +73,34 @@ def tokenize_he(text):
     return out
 
 
+# Function-word stems to exclude from domain terms (truncated stems that leak through)
+FUNCTION_STEMS = {
+    "בלי", "חשב", "דרך", "רוא", "כלי", "תיקו", "תוך", "כוונ", "דבר", "אמר",
+    "עשה", "בא", "הלך", "על", "תחת", "מעל", "מול", "נגד", "בין", "אל", "עד",
+    "מ", "ל", "ב", "כ", "ש", "ה", "ו", "כי", "אם", "גם", "רק", "עוד", "מאוד",
+    "יותר", "פחות", "כמו", "כאשר", "אז", "עכשיו", "היום", "אתמול", "מחר",
+    "יש", "אין", "כל", "חלק", "קצת", "הרבה", "מעט", "שוב", "תמיד", "אף",
+}
+
+
 def domain_terms(text, top_n=12, min_count=2):
     toks = tokenize_he(text)
     if not toks:
         return []
     c = Counter(toks)
-    return [w for w, n in c.most_common(top_n) if n >= min_count]
+    # Filter: min_count, min length 3, not a function stem
+    result = []
+    for w, n in c.most_common(top_n * 2):
+        if n < min_count:
+            continue
+        if len(w) < 3:
+            continue
+        if w in FUNCTION_STEMS:
+            continue
+        result.append(w)
+        if len(result) >= top_n:
+            break
+    return result
 
 
 # Multilingual support
