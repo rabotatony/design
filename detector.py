@@ -104,7 +104,7 @@ def _noise_raw_mode(gray):
     corr = float(np.corrcoef(means[valid], vars_[valid])[0, 1])
     if np.isnan(corr):
         corr = 0.0
-    score = float(np.clip((0.5 - corr) / 0.3, 0, 1))
+    score = float(np.clip((0.5 - corr) / 0.25, 0, 1))
     return {"score": score, "detail": f"Raw mode. intensity-variance corr: {corr:.2f}"}
 
 
