@@ -1,0 +1,17 @@
+{
+  "ai_images": {
+    "ai_landscape": "https://image.qwenlm.ai/public_source/46babd87-1517-4c1a-a0f4-9208a5eedca1/11d287bd7-d201-4315-be6a-e3643fcb7bc9.png",
+    "ai_portrait": "https://image.qwenlm.ai/public_source/46babd87-1517-4c1a-a0f4-9208a5eedca1/140f8b208-3e90-4ea9-84d2-7631a11d4ad5.png",
+    "ai_food": "https://image.qwenlm.ai/public_source/46babd87-1517-4c1a-a0f4-9208a5eedca1/1e34031d4-c364-499f-8e8b-a9902ca8bb1c.png",
+    "ai_product": "https://image.qwenlm.ai/public_source/46babd87-1517-4c1a-a0f4-9208a5eedca1/1d45eb3b4-4ca5-4dd4-95b7-23e7976d6c87.png"
+  },
+  "real_seeds": [
+    31,
+    32,
+    33,
+    41,
+    42,
+    43
+  ],
+  "note": "AI images are AI-generated; real_seeds are real photos from picsum. Harness downloads + runs detector + measures accuracy."
+}
