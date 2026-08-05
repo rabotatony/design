@@ -202,3 +202,23 @@ if __name__ == "__main__":
         print(json.dumps({"rewritten": out, "applied": applied,
                           "validation": validate_rewrite(entries, out)},
                          ensure_ascii=False, indent=1))
+
+def de_ai_text_collection(entries):
+    """Full text de-AI pipeline for a collection of text entries.
+    Combines targeted contrast reduction (removes AI contrast constructions)
+    with editorial diversification (varies structure). Returns (entries, report)."""
+    try:
+        import text_deep
+        reduced = text_deep.targeted_contrast_reduction(entries)
+        reduced_entries = reduced[0] if isinstance(reduced, tuple) else reduced
+        contrast_applied = True
+    except Exception:
+        reduced_entries = entries
+        contrast_applied = False
+    diversified, log = editorial_diversify(reduced_entries)
+    report = {
+        "contrast_reduction_applied": contrast_applied,
+        "diversify_log": log,
+        "entries_out": len(diversified),
+    }
+    return diversified, report
