@@ -16,12 +16,15 @@ AI_PALETTES = {
 }
 
 WEIGHTS = {
-    "frequency_ceiling": 0.20,
-    "noise_pattern": 0.10,
-    "palette": 0.30,
-    "composition": 0.10,
-    "texture_uniformity": 0.20,
-    "metadata": 0.10,
+    # Recalibrated on real data (real photo vs real AI-generated image):
+    # noise_pattern is the strongest true AI signal; frequency_ceiling and
+    # metadata produced false positives on real photos, so they are down-weighted.
+    "frequency_ceiling": 0.10,
+    "noise_pattern": 0.40,
+    "palette": 0.20,
+    "composition": 0.20,
+    "texture_uniformity": 0.10,
+    "metadata": 0.00,
 }
 
 AI_SOFTWARE_TAGS = [
