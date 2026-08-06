@@ -119,6 +119,8 @@ def _signature_radius(dna):
         return ("2px 2px 16px 16px", "drop geometry from signature")
     if "crystal" in sig or "gem" in sig or "גביש" in sig:
         return ("10px 2px 10px 2px", "crystal geometry from signature")
+    if "hammer" in sig or "forge" in sig or "anvil" in sig or "פטיש" in sig or "סדן" in sig or "נפח" in sig:
+        return ("6px 6px 2px 14px", "hammer/forge geometry from signature")
     return (None, "signature geometry unrecognized — human input needed")
 
 
