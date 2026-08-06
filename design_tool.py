@@ -77,6 +77,10 @@ def main():
         return
     command = sys.argv[1]
     file_arg = sys.argv[2]
+    # Check if the file exists
+    if not os.path.exists(file_arg):
+        print(f"Error: File not found: {file_arg}")
+        return
     if command == "analyze":
         analyze_text(file_arg)
     elif command == "generate":
