@@ -131,6 +131,13 @@ def replace_block_vars(css, selector, replacements):
 
 
 def apply_project(existing_css, composed_tokens, composed_motion):
+    # Handle None inputs gracefully
+    if existing_css is None:
+        existing_css = ""
+    if composed_tokens is None:
+        composed_tokens = ""
+    if composed_motion is None:
+        composed_motion = ""
     report = {"changes": []}
     css, removed = remove_tells(existing_css)
     report["removed_tells"] = removed
