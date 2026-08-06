@@ -179,6 +179,13 @@ def mine_domain_vocab(texts):
 
 
 def mine_project(css, texts, content_sources):
+    # Handle None inputs gracefully
+    if css is None:
+        css = ""
+    if texts is None:
+        texts = []
+    if content_sources is None:
+        content_sources = []
     css_f = mine_css(css)
     voice_f = mine_text(texts)
     motif_f = mine_structure(content_sources)
