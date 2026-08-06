@@ -69,6 +69,7 @@ def generate_design_system(content):
     from layout_generator import generate_layout
     from component_generator import generate_components
     from pattern_generator import derive_patterns
+    from guidelines_generator import derive_guidelines
 
     # Step 1: mine identity
     identity = mine_identity_from_content(content)
@@ -88,6 +89,9 @@ def generate_design_system(content):
     # Step 6: derive design patterns
     patterns = derive_patterns(design_language)
 
+    # Step 7: derive design guidelines
+    guidelines = derive_guidelines(design_language)
+
     return {
         "identity": identity,
         "design_language": design_language,
@@ -95,6 +99,7 @@ def generate_design_system(content):
         "layout": {"html": layout_html, "css": layout_css},
         "components": components,
         "patterns": patterns,
+        "guidelines": guidelines,
     }
 
 
@@ -118,3 +123,6 @@ if __name__ == "__main__":
     print("\nGenerated patterns:")
     for principle, pattern in system["patterns"].items():
         print(f"  {principle}: {pattern['name']}")
+    print("\nGenerated guidelines:")
+    for principle, guideline in system["guidelines"].items():
+        print(f"  {principle}: {guideline['name']}")
