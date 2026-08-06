@@ -210,6 +210,11 @@ def de_ai_text_collection(entries):
     """Full text de-AI pipeline for a collection of text entries.
     Combines targeted contrast reduction (removes AI contrast constructions)
     with editorial diversification (varies structure). Returns (entries, report)."""
+    # Handle None/empty input gracefully
+    if entries is None:
+        entries = []
+    if not isinstance(entries, list):
+        entries = [entries]
     try:
         import text_deep
         reduced = text_deep.targeted_contrast_reduction(entries)
