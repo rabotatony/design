@@ -1,0 +1,31 @@
+:root {
+  /* Palette (generated from color theory) */
+  --surface-base: #d85b26;
+  --surface-0: #56240f;
+  --surface-1: #973f1a;
+  --surface-2: #d85b26;
+  --surface-3: #e48c67;
+  --surface-4: #efbda8;
+  --accent: #d8b425;
+
+  /* Typography (generated from mathematical ratios) */
+  --text-0: 16.0px;
+  --text-1: 20.0px;
+  --text-2: 25.0px;
+  --text-3: 31.2px;
+  --text-4: 39.1px;
+  --text-5: 48.8px;
+  --text-6: 61.0px;
+  --text-7: 76.3px;
+  --line-height: 1.6;
+
+  /* Spacing (generated from mathematical ratios) */
+  --space-0: 16.0px;
+  --space-1: 24.0px;
+  --space-2: 36.0px;
+  --space-3: 54.0px;
+  --space-4: 81.0px;
+  --space-5: 121.5px;
+  --space-6: 182.2px;
+  --space-7: 273.4px;
+}
