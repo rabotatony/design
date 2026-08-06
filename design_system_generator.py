@@ -71,6 +71,7 @@ def generate_design_system(content):
     from pattern_generator import derive_patterns
     from guidelines_generator import derive_guidelines
     from style_generator import generate_typography_css, generate_spacing_css
+    from color_system_generator import derive_color_harmony
 
     # Step 1: mine identity
     identity = mine_identity_from_content(content)
@@ -96,6 +97,9 @@ def generate_design_system(content):
     # Step 8: generate typography + spacing scales
     typography_css = generate_typography_css(design_language)
     spacing_css = generate_spacing_css(design_language)
+
+    # Step 9: derive color harmony
+    color_harmony = derive_color_harmony(design_language)
 
     return {
         "identity": identity,
@@ -135,3 +139,7 @@ if __name__ == "__main__":
     print(system["typography_css"])
     print("\nGenerated spacing CSS:")
     print(system["spacing_css"])
+    print("\nGenerated color harmony:")
+    print("  base:", system["color_harmony"]["base"])
+    print("  complementary:", system["color_harmony"]["complementary"])
+    print("  analogous:", system["color_harmony"]["analogous"])
