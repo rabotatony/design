@@ -84,6 +84,9 @@ FUNCTION_STEMS = {
 
 
 def domain_terms(text, top_n=12, min_count=2):
+    # Handle None input gracefully
+    if text is None:
+        text = ""
     toks = tokenize_he(text)
     if not toks:
         return []
