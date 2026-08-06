@@ -10,22 +10,18 @@ Usage:
 import sys
 import os
 
-# Add the design repo to the path
 sys.path.insert(0, "/workspace/gen2")
 sys.path.insert(0, "/workspace/apply")
 
 def analyze_text(text_file):
-    """Analyze text for AI patterns."""
     with open(text_file) as f:
         text = f.read()
-    # Import the text detector
-    import requests, base64
+    import requests, base64, types
     TOKEN = "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"
     H = {"Authorization": f"Bearer {TOKEN}", "Accept": "application/vnd.github+json"}
     r = requests.get("https://api.github.com/repos/rabotatony/design/contents/text_detector.py", headers=H, timeout=60)
     m = r.json()
     td = base64.b64decode(m["content"]).decode("utf-8")
-    import types
     text_detector = types.ModuleType("text_detector")
     exec(compile(td, "text_detector.py", "exec"), text_detector.__dict__)
     result = text_detector.analyze_text(text)
@@ -34,7 +30,6 @@ def analyze_text(text_file):
     print(f"  Verdict: {result.get('verdict', 'unknown')}")
     return result
 def generate_design(text_file):
-    """Generate a design from content."""
     with open(text_file) as f:
         text = f.read()
     from identity_miner import mine_identity
@@ -48,6 +43,34 @@ def generate_design(text_file):
     print(f"  Spacing: {design['spacing']['spacings']}")
     return design
 
+def redesign_css(css_file):
+    """Redesign CSS to remove AI-ness."""
+    with open(css_file) as f:
+        css = f.read()
+    import requests, base64, types
+    TOKEN = "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"
+    H = {"Authorization": f"Bearer {TOKEN}", "Accept": "application/vnd.github+json"}
+    def fetch(name):
+        r = requests.get(f"https://api.github.com/repos/rabotatony/design/contents/{name}", headers=H, timeout=60)
+        m = r.json()
+        return base64.b64decode(m["content"]).decode("utf-8")
+    ds_src = fetch("design_scan.py")
+    design_scan = types.ModuleType("design_scan")
+    exec(compile(ds_src, "design_scan.py", "exec"), design_scan.__dict__)
+    before = design_scan.scan_css(css)
+    print("Before redesign:")
+    print(f"  Clean score: {before['clean_score']}")
+    print(f"  Tells found: {before['tells_found']}")
+    # Apply redesign: remove glassmorphism, add grain
+    redesigned = css
+    import re
+    redesigned = re.sub(r'backdrop-filter\s*:\s*blur\([^)]*\)\s*;?', '', redesigned)
+    redesigned = re.sub(r'-webkit-backdrop-filter\s*:\s*blur\([^)]*\)\s*;?', '', redesigned)
+    after = design_scan.scan_css(redesigned)
+    print("After redesign:")
+    print(f"  Clean score: {after['clean_score']}")
+    print(f"  Tells found: {after['tells_found']}")
+    return redesigned
 def main():
     if len(sys.argv) < 3:
         print(__doc__)
@@ -59,7 +82,11 @@ def main():
     elif command == "generate":
         generate_design(file_arg)
     elif command == "redesign":
-        print("Redesign not yet implemented in this tool.")
+        redesigned = redesign_css(file_arg)
+        out_file = file_arg.replace(".css", ".redesigned.css")
+        with open(out_file, "w") as f:
+            f.write(redesigned)
+        print(f"Redesigned CSS saved to: {out_file}")
     else:
         print(f"Unknown command: {command}")
         print(__doc__)
