@@ -85,6 +85,9 @@ COMBOS = [
 
 
 def rewrite_entry(text, operations):
+    # Handle None input gracefully
+    if text is None:
+        text = ""
     out = text
     for op in operations:
         out = OPS[op](out)
