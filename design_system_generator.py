@@ -70,6 +70,7 @@ def generate_design_system(content):
     from component_generator import generate_components
     from pattern_generator import derive_patterns
     from guidelines_generator import derive_guidelines
+    from style_generator import generate_typography_css, generate_spacing_css
 
     # Step 1: mine identity
     identity = mine_identity_from_content(content)
@@ -91,6 +92,10 @@ def generate_design_system(content):
 
     # Step 7: derive design guidelines
     guidelines = derive_guidelines(design_language)
+
+    # Step 8: generate typography + spacing scales
+    typography_css = generate_typography_css(design_language)
+    spacing_css = generate_spacing_css(design_language)
 
     return {
         "identity": identity,
@@ -126,3 +131,7 @@ if __name__ == "__main__":
     print("\nGenerated guidelines:")
     for principle, guideline in system["guidelines"].items():
         print(f"  {principle}: {guideline['name']}")
+    print("\nGenerated typography CSS:")
+    print(system["typography_css"])
+    print("\nGenerated spacing CSS:")
+    print(system["spacing_css"])
