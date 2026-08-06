@@ -112,6 +112,11 @@ def detect_voice(content):
 
 
 def mine_identity(content):
+    # Input validation: handle non-string inputs gracefully
+    if content is None:
+        content = ""
+    elif not isinstance(content, str):
+        content = str(content)
     """Mine a project's identity from its content.
     Returns an identity dict with motifs, materials, character, voice.
     """
