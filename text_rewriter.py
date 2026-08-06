@@ -215,6 +215,9 @@ def de_ai_text_collection(entries):
         entries = []
     if not isinstance(entries, list):
         entries = [entries]
+    # Early return for empty collections
+    if len(entries) == 0:
+        return [], {"contrast_reduction_applied": False, "diversify_log": [], "entries_out": 0}
     try:
         import text_deep
         reduced = text_deep.targeted_contrast_reduction(entries)
