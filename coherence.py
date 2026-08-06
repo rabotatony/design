@@ -54,6 +54,13 @@ def he_tokens(text):
 
 
 def analyze_coherence(content_text, code_text="", css_text=""):
+    # Handle None/list inputs gracefully
+    if content_text is None:
+        content_text = ""
+    elif isinstance(content_text, list):
+        content_text = " ".join(str(item) for item in content_text)
+    elif not isinstance(content_text, str):
+        content_text = str(content_text)
     evidence = {}
     toks = he_tokens(content_text)
     total = len(toks)
