@@ -90,6 +90,9 @@ WEIGHTS = {
 
 
 def analyze_code(code, path=""):
+    # Handle None input gracefully
+    if code is None:
+        code = ""
     detectors = {
         "redundant_comments": detect_redundant_comments(code),
         "console_leftover": detect_console_leftover(code),
