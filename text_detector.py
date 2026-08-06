@@ -42,6 +42,12 @@ EN_LEXICON = {
         "a testament to", "sheds light", "embark on a journey", "harness",
         "cutting-edge", "game-changer", "streamline", "holistic", "paradigm",
         "dive deep", "take a closer look", "at the end of the day",
+        "but here's the thing", "then i realized", "hot take", "here's why",
+        "stands as a", "serves as a", "marks a", "represents a",
+        "boasts a", "vibrant", "rich", "profound", "showcasing", "nestled",
+        "groundbreaking", "empowers", "transformative", "revolutionary",
+        "not just a", "not merely a", "not simply a", "it's not just",
+        "fast, reliable, and", "no fluff", "no hype",
     ],
     "abstract_nouns": [
         "journey", "experience", "growth", "transformation", "empowerment",
