@@ -68,6 +68,7 @@ def generate_design_system(content):
     from design_generator import generate_design_css
     from layout_generator import generate_layout
     from component_generator import generate_components
+    from pattern_generator import derive_patterns
 
     # Step 1: mine identity
     identity = mine_identity_from_content(content)
@@ -84,12 +85,16 @@ def generate_design_system(content):
     # Step 5: generate components
     components = generate_components(design_language)
 
+    # Step 6: derive design patterns
+    patterns = derive_patterns(design_language)
+
     return {
         "identity": identity,
         "design_language": design_language,
         "css": design_css,
         "layout": {"html": layout_html, "css": layout_css},
         "components": components,
+        "patterns": patterns,
     }
 
 
@@ -110,3 +115,6 @@ if __name__ == "__main__":
     print("\nGenerated components:")
     for component_type, css in system["components"].items():
         print(f"  {component_type}: {len(css)} chars")
+    print("\nGenerated patterns:")
+    for principle, pattern in system["patterns"].items():
+        print(f"  {principle}: {pattern['name']}")
