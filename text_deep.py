@@ -46,6 +46,9 @@ WEIGHTS = {"contrast": 0.60, "tricola": 0.25, "abstract": 0.15}
 
 
 def analyze_deep(text):
+    # Handle None input gracefully
+    if text is None:
+        text = ""
     d = {
         "contrast": detect_contrast_constructions(text),
         "tricola": detect_tricola(text),
