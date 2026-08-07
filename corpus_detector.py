@@ -144,6 +144,9 @@ def detect_length_targeting(entries):
 
 
 def analyze_corpus(entries, lang="he"):
+    # Handle None input gracefully
+    if entries is None:
+        entries = []
     entries = [e for e in entries if e and len(e.strip()) > 20]
     if len(entries) < 4:
         return {"total_score": 0.0, "verdict": "insufficient", "entries": len(entries), "detectors": {}}
