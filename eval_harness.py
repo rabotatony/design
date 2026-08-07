@@ -14,17 +14,22 @@ DEFAULT_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "eval_
 
 def load_detector(detector_path):
     import importlib.util
+    if not os.path.exists(detector_path):
+        raise FileNotFoundError(f"Detector file not found: {detector_path}")
     spec = importlib.util.spec_from_file_location("detector", detector_path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
 
 def download(url, dest, timeout=20):
-    r = requests.get(url, timeout=timeout, allow_redirects=True)
-    if r.status_code == 200 and len(r.content) > 2000:
-        open(dest, "wb").write(r.content)
-        return True
-    return False
+    try:
+        r = requests.get(url, timeout=timeout, allow_redirects=True)
+        if r.status_code == 200 and len(r.content) > 2000:
+            open(dest, "wb").write(r.content)
+            return True
+        return False
+    except Exception:
+        return False
 
 def main():
     cfg_path = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_CONFIG
