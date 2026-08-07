@@ -53,6 +53,9 @@ def flag_human_review(code):
 
 def clean_code(code):
     """Apply safe counters + report. Returns (cleaned_code, report)."""
+    # Handle None input gracefully
+    if code is None:
+        code = ""
     before_lines = len(code.splitlines())
     code2, rm_comments = remove_redundant_comments(code)
     code3, rm_console = remove_debug_console(code2)
