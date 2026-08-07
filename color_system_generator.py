@@ -12,7 +12,12 @@ The key: color harmonies are derived from the base color, not picked from templa
 """
 
 def hex_to_hsl(hex_color):
+    # Handle None/empty/invalid input gracefully
+    if hex_color is None or not isinstance(hex_color, str):
+        return 0.0, 0.0, 0.5  # default: gray
     hex_color = hex_color.lstrip("#")
+    if len(hex_color) != 6:
+        return 0.0, 0.0, 0.5  # default: gray
     r = int(hex_color[0:2], 16) / 255.0
     g = int(hex_color[2:4], 16) / 255.0
     b = int(hex_color[4:6], 16) / 255.0
